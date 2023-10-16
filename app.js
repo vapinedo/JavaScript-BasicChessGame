@@ -2,16 +2,18 @@ const gameBoard = document.querySelector("#gameboard");
 const playerDisplay = document.querySelector("#player");
 const infoDisplay = document.querySelector("#info-display");
 const width = 8;
+let playerGo = 'black';
+playerDisplay.textContent = 'black';
 
 const startPieces = [
-  rook, knight, bishop, queen, king,bishop, knight, rook,
+  rook, knight, bishop, queen, king, bishop, knight, rook,
   pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
-  rook, knight, bishop, queen, king,bishop, knight, rook,
-  pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn  
+  pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
+  rook, knight, bishop, queen, king, bishop, knight, rook
 ];
 
 function createBoard() {
@@ -19,6 +21,7 @@ function createBoard() {
     const square = document.createElement("div");
     square.classList.add("square"); 
     square.innerHTML = startPiece;
+    square.firstChild?.setAttribute('draggable', true);
     square.setAttribute("square-id", index);
     // square.classList.add("beige");
     const row =  Math.floor((63 - index) / 8) + 1;
@@ -27,8 +30,70 @@ function createBoard() {
     } else {
       square.classList.add(index % 2 === 0 ? "brown": "beige");
     }
+
+    if (index <= 15) {
+      square.firstChild.firstChild.classList.add("black");
+    }
+
+    if (index >= 48) {
+      square.firstChild.firstChild.classList.add("white");
+    }
+
     gameBoard.append(square);
   });
 }
-
 createBoard();
+
+
+const allSquares = document.querySelectorAll(".square");
+allSquares.forEach(square => {
+   square.addEventListener('dragstart', dragStart);
+   square.addEventListener('dragover', dragOver);
+   square.addEventListener('drop', dragDrop);
+});
+
+let startPositionId;
+let draggedElement;
+
+function dragStart(e) {
+  startPositionId = e.target.parentNode.getAttribute('square-id');
+  draggedElement = e.target;
+}
+
+function dragOver(e) {
+  e.preventDefault();
+}
+
+function dragDrop(e) {
+  e.stopPropagation();
+  const taken = e.target.classList.contains('piece');
+
+  // e.target.parentNode.append(draggedElement);
+  // e.target.remove();
+  // e.target.append(draggedElement);
+  changePlayer();
+}
+
+function changePlayer() {
+  if (playerGo === 'black') {
+    reverseIds();
+    playerGo = 'white';
+    playerDisplay.textContent = 'white';
+  } else {
+    revertIds();
+    playerGo = 'black';
+    playerDisplay.textContent = 'black';
+  }
+}
+
+function reverseIds() {
+  const allSquares = document.querySelectorAll('.square');
+  allSquares.forEach((square, index) => {
+    square.setAttribute('square-id', (width * width - 1) - index);
+  });
+}
+
+function revertIds() {
+  const allSquares = document.querySelectorAll('.square');
+  allSquares.forEach((square, index) => square.setAttribute('square-id', index));
+}
